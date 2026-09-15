@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Environment / machine-specific
+.env
+
+# Data (external drive symlinks + local outputs)
+data/
+*.h5
+*.hdf5
+
+# macOS
+.DS_Store
+._*

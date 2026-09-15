@@ -1,0 +1,21 @@
+{
+ "Beamline" : "8IDE_2024",
+ "Geometry" : "Vertical",
+ "Compound" : "b10",
+ "Particle" : "A7",
+ "Base"     : "/Users/eriklamb/data/APS/8_ID_E/Na2B10H10/",
+ "Processed": "processed/",
+    
+ "343":  "A343_NaBH_att000020_320K_001/",
+ "344":  "A344_NaBH_att000020_329K_001/",
+ "349":  "A349_NaBH_att000020_339K_001/",
+ "350":  "A350_NaBH_att000020_350K_001/",
+ "353":  "A353_NaBH_att000020_360K_001/",
+ "354":  "A354_NaBH_att000020_370K_001/",
+ "358": "A358_NaBH_att000020_380K_001/",
+ "362": "A362_NaBH_att000020_399K_001/",
+ "363": "A363_NaBH_att000020_420K_001/",
+
+    
+ "343_processed": "A339_NaBH_att000020_420K_001/" 
+}
