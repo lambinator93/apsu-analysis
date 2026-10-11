@@ -294,6 +294,69 @@ def normalize_g2(G2, IF, IP, m, delay, hot_pixel_threshold=1e3):
     return g2_mean, g2_error, last_index
 
 
+def g2_traces(Ia, Ib=None, dt=1.0, dpl=6):
+    """Multi-tau g2 of two 1D intensity traces on the XPCS delay grid.
+
+    Auto-correlation when ``Ib`` is None or the same array as ``Ia``.
+    Cross-correlation otherwise: ``g2(τ) = <Ia(t) Ib(t+τ)> / (<Ia><Ib>)``.
+
+    Returns
+    -------
+    delay_s : ndarray
+        Delays in seconds, including τ = 0.
+    g2 : ndarray
+        Normalized g2 at each delay.
+    g2_err : ndarray
+        Standard error of the mean product, scaled by ``<Ia><Ib>``.
+    """
+    Ia = np.asarray(Ia, dtype=float).ravel()
+    Ib = Ia if Ib is None else np.asarray(Ib, dtype=float).ravel()
+    if Ia.shape != Ib.shape:
+        raise ValueError("Ia and Ib must have the same length")
+    n = int(Ia.size)
+    if n < 2:
+        raise ValueError("traces must have at least 2 samples")
+
+    delay_frames = np.concatenate(([0.0], np.asarray(getdelayinfo(n, dpl)[0], dtype=float).ravel()))
+    delay_frames = delay_frames[(delay_frames >= 0) & (delay_frames < n)]
+
+    g2 = np.full(delay_frames.size, np.nan)
+    g2_err = np.full(delay_frames.size, np.nan)
+    for i, delay in enumerate(delay_frames):
+        step = int(delay)
+        a = Ia if step == 0 else Ia[:-step]
+        b = Ib if step == 0 else Ib[step:]
+        if a.size < 2:
+            continue
+        mean_a = float(np.mean(a))
+        mean_b = float(np.mean(b))
+        if mean_a == 0.0 or mean_b == 0.0:
+            continue
+        prod = a * b
+        g2[i] = float(np.mean(prod) / (mean_a * mean_b))
+        g2_err[i] = float(np.std(prod, ddof=1) / (np.sqrt(a.size) * mean_a * mean_b))
+    return delay_frames * float(dt), g2, g2_err
+
+
+def twotime_traces(Ia, Ib=None):
+    """Pearson two-time map of two 1D intensity traces.
+
+    ``C[t1, t2] = δIa[t1] δIb[t2] / (σa σb)``. Auto-correlation when ``Ib``
+    is None. Shape is ``(nframes, nframes)``.
+    """
+    Ia = np.asarray(Ia, dtype=float).ravel()
+    Ib = Ia if Ib is None else np.asarray(Ib, dtype=float).ravel()
+    if Ia.size != Ib.size:
+        raise ValueError("Ia and Ib must have the same length")
+    std_a = float(np.std(Ia))
+    std_b = float(np.std(Ib))
+    if std_a == 0.0 or std_b == 0.0:
+        return np.full((Ia.size, Ib.size), np.nan, dtype=np.float32)
+    za = (Ia - np.mean(Ia)) / std_a
+    zb = (Ib - np.mean(Ib)) / std_b
+    return np.outer(za, zb).astype(np.float32)
+
+
 """""""""
 --- subfunction getdelayinfo
 """""""""
